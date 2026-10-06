@@ -229,6 +229,18 @@ Pour **587**, `secure=false` et STARTTLS est exigé par `requireTLS=true` ; la v
 
 EMAIL_TO accepte des adresses simples séparées par **virgule ou point-virgule**. Les valeurs sont trimées, les entrées vides supprimées et les doublons éliminés sans distinction de casse. Exemple : `EMAIL_TO="premier@example.com; second@example.com, premier@example.com"` enverra à deux destinataires. EMAIL_FROM accepte `Coach Invest <christophe.decugis@gmail.com>`. Un refus SMTP partiel est traité comme un échec sans nouvel envoi automatique, car certains destinataires peuvent déjà avoir reçu le message.
 
+### Test du rapport complet depuis la base
+
+Avec les variables Supabase et SMTP du `.env` existant, et `EMAIL_ENABLED=true`, lancer :
+
+```powershell
+npm run email:test-report
+```
+
+Le script sélectionne le dernier `invest_daily_runs` au statut `completed` pour le portefeuille InvestmentAdvisor, puis réutilise `getCompletedReport`, `buildDailyReport` et `renderDailyEmail`. Snapshot, recommandations et transactions déjà enregistrées sont relus sans lancer de job, de scoring ou d'ordre. Le sujet est `InvestCoach — test rapport complet — <date>` et les logs indiquent `manual test report`. En l'absence de run finalisé, l'erreur est `NO_FINALIZED_REPORT_AVAILABLE`.
+
+Ce test envoie directement via le transport SMTP de production sans lire ni écrire l'outbox normale. Chaque invocation manuelle peut donc envoyer à nouveau le même rapport ; aucun retry automatique n'est effectué. Avec `EMAIL_ENABLED=false`, aucun email n'est envoyé.
+
 ### Test SMTP local indépendant
 
 Renseigner le `.env` existant sans l'écraser, ajouter le mot de passe d'application dans SMTP_PASSWORD et les destinataires dans EMAIL_TO. Définir explicitement `EMAIL_ENABLED=true` pour autoriser ce test, puis :

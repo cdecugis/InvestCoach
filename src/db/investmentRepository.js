@@ -118,6 +118,18 @@ export class InvestmentRepository {
   async getCompletedRun(runId) {
     return resultOrThrow(await this.table('dailyRuns').select('*').eq('id', runId).eq('status', 'completed').single(), 'run finalisé');
   }
+  async getLatestCompletedReport() {
+    const portfolio = await this.getPortfolio();
+    const run = resultOrThrow(await this.table('dailyRuns').select('id')
+      .eq('portfolio_id', portfolio.id).eq('status', 'completed')
+      .order('run_date', { ascending: false }).limit(1).maybeSingle(), 'dernier run finalisé');
+    if (!run) {
+      const error = new Error('NO_FINALIZED_REPORT_AVAILABLE');
+      error.code = 'NO_FINALIZED_REPORT_AVAILABLE';
+      throw error;
+    }
+    return this.getCompletedReport(run.id);
+  }
   async getCompletedReport(runId) {
     const run = await this.getCompletedRun(runId);
     const [snapshot, records, trades, assets, portfolio] = await Promise.all([

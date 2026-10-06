@@ -11,6 +11,7 @@
     "start": "node src/server.js",
     "daily": "node scripts/daily.js",
     "email:test": "node scripts/email-test.js",
+    "email:test-report": "node scripts/email-test-report.js",
     "dev": "node --watch src/server.js",
     "check": "node scripts/check-syntax.js",
     "test": "node --test --test-isolation=none tests/*.test.js"
