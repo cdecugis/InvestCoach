@@ -25,10 +25,10 @@ export function createDailyJobHandler(job = runDailyJob, now = () => new Date(),
         code: 'MARKET_DATA_UNAVAILABLE', symbol: record.symbol,
         message: 'Données indisponibles pour cet actif ; aucune transaction proposée.'
       }));
-      res.json({ status: result.status, startTime, endTime: now().toISOString(),
+      res.json({ ...result, status: result.status, startTime, endTime: now().toISOString(),
         dryRun: result.dryRun, paperTrading: true, date: result.date,
         assetsProcessed: new Set(recommendations.map(record => record.instrumentId).filter(Boolean)).size,
-        recommendations, transactions: result.executedTransactions ?? [], errors });
+        recommendations, transactions: result.executedTransactions ?? [], errors: [...(result.errors ?? []), ...errors] });
     } catch (error) {
       // Les détails externes peuvent contenir des credentials : ne pas les retourner.
       logError(errorLogEntry('request_failed', error));

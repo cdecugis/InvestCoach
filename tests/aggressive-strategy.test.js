@@ -185,7 +185,7 @@ test('email affiche le risque, la confiance, les réanalyses et échappe les sou
 });
 
 test('email désactivé, exécution sans contexte refusée et DRY_RUN sans transaction', async () => {
-  await assert.rejects(sendDailyEmail({}), { code: 'NOT_IMPLEMENTED' });
+  assert.deepEqual(await sendDailyEmail({}, { enabled: false }), { sent: false });
   await assert.rejects(executePaperTrades({}), /incomplet/);
   assert.deepEqual(await executePaperTrades({ repository: { executeTrade() { throw new Error('écriture interdite'); } },
     run: { id: 'run' }, dryRun: true }), []);

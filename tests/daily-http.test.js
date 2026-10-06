@@ -13,9 +13,11 @@ test('HTTP daily : réponse structurée et paramètres du client ignorés', asyn
   let args;
   const recommendations = [{ instrumentId: 'a', symbol: 'AAPL', action: 'NO_ACTION', reasons: [] },
     { instrumentId: null, action: 'NO_ACTION', reasons: [] }];
+  const summary = { actionRequired: false, headline: 'AUCUNE OPÉRATION AUJOURD’HUI', buys: [], sells: [], holds: [], watch: [], noActionCount: 1 };
   const handler = createDailyJobHandler(async (...input) => {
     args = input;
-    return { status: 'completed', dryRun: true, date: '2026-10-06', recommendations, executedTransactions: [] };
+    return { status: 'completed', dryRun: true, date: '2026-10-06', recommendations, executedTransactions: [],
+      summary, emailRendered: true, emailSent: false, portfolio: { cashEur: 1000 }, email: { text: summary.headline } };
   }, clock);
   const res = response();
   await handler({ body: { dryRun: false, paperTrading: false }, query: { dryRun: 'false' } }, res);
@@ -28,6 +30,11 @@ test('HTTP daily : réponse structurée et paramètres du client ignorés', asyn
   assert.deepEqual(res.body.recommendations, recommendations);
   assert.deepEqual(res.body.transactions, []);
   assert.deepEqual(res.body.errors, []);
+  assert.deepEqual(res.body.summary, summary);
+  assert.equal(res.body.emailRendered, true);
+  assert.equal(res.body.emailSent, false);
+  assert.equal(res.body.portfolio.cashEur, 1000);
+  assert.equal(res.body.email.text, summary.headline);
 });
 
 test('HTTP daily : analyse déjà terminée et erreur partielle explicite', async () => {

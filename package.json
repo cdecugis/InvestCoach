@@ -10,14 +10,16 @@
   "scripts": {
     "start": "node src/server.js",
     "daily": "node scripts/daily.js",
+    "email:test": "node scripts/email-test.js",
     "dev": "node --watch src/server.js",
     "check": "node scripts/check-syntax.js",
-    "test": "node --test --test-isolation=none"
+    "test": "node --test --test-isolation=none tests/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "nodemailer": "^10.0.15",
     "yahoo-finance2": "^4.0.3"
   },
   "devDependencies": {

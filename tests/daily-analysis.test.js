@@ -5,6 +5,7 @@ import { runDailyAnalysis } from '../src/jobs/dailyAnalysis.js';
 import { config } from '../src/config/env.js';
 import { YahooProvider } from '../src/data/providers/yahoo.js';
 import { calculatePerformance } from '../src/modules/performance/index.js';
+import { InvestmentRepository } from '../src/db/investmentRepository.js';
 
 function bars(length = 400, endDate = '2026-10-05') {
   const dates = [];
@@ -176,4 +177,41 @@ test('adaptateur Yahoo : format normalisé, fin de plage inclusive, clôture et 
   const fx = await provider.getFxHistory('USD','2026-10-01','2026-10-06');
   assert.equal(fx[0].eurPerUnit,0.8);
   assert.equal(fx[0].openEurPerUnit,1/1.2);
+});
+
+test('FX Yahoo : une seule cotation par date, dernière bougie actualisée conservée', async () => {
+  const provider = new YahooProvider({ ...config, marketDelayMs: 0, marketRetries: 1 }, {
+    async chart() {
+      return { meta: { currency: 'USD', exchangeTimezoneName: 'UTC' }, events: {}, quotes: [
+        { date: new Date('2026-10-05T00:00:00Z'), open: 1.1, high: 1.3, low: 1, close: 1.2, adjclose: 1.2 },
+        { date: new Date('2026-10-06T00:00:00Z'), open: 1.2, high: 1.4, low: 1.1, close: 1.3, adjclose: 1.3 },
+        { date: new Date('2026-10-06T20:00:00Z'), open: 1.2, high: 1.4, low: 1.1, close: 1.25, adjclose: 1.25 },
+      ] };
+    },
+  }, () => new Date('2026-10-07T00:00:00Z'));
+  const fx = await provider.getFxHistory('USD', '2026-10-01', '2026-10-06');
+  assert.equal(fx.length, 2);
+  assert.deepEqual(fx.map(row => row.date), ['2026-10-05', '2026-10-06']);
+  assert.equal(fx[1].eurPerUnit, .8);
+  assert.equal(fx[1].openEurPerUnit, 1/1.2);
+});
+
+test('persistance FX : clés date/devise dédupliquées avant upsert, aucune suppression', async () => {
+  const calls = [];
+  const repository = new InvestmentRepository({ from(table) {
+    assert.equal(table, 'invest_fx_rates');
+    return { async upsert(rows, options) { calls.push({ rows, options }); return { data: null, error: null }; } };
+  } });
+  const rows = [
+    { rate_date: '2026-10-06', currency: 'USD', eur_per_unit: .79 },
+    { rate_date: '2026-10-06', currency: 'GBP', eur_per_unit: 1.16 },
+    { rate_date: '2026-10-06', currency: 'USD', eur_per_unit: .8 },
+  ];
+  const before = structuredClone(rows);
+  assert.equal(await repository.saveFx(rows), 2);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.onConflict, 'rate_date,currency');
+  assert.equal(calls[0].rows.find(row => row.currency === 'USD').eur_per_unit, .8);
+  assert.equal(calls[0].rows.find(row => row.currency === 'GBP').eur_per_unit, 1.16);
+  assert.deepEqual(rows, before);
 });

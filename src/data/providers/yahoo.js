@@ -80,8 +80,11 @@ export class YahooProvider extends MarketDataProvider {
     const normalized = currency === 'GBX' ? 'GBP' : currency;
     const invert = normalized === 'USD';
     const history = await this.getDailyHistory(invert ? 'EURUSD=X' : `${normalized}EUR=X`, startDate, endDate);
-    return history.map(row => ({ date: row.date, currency,
+    // Yahoo peut inclure une seconde cotation du jour (bougie actualisée).
+    // La dernière conserve le même taux que fxAt/findLast dans le moteur.
+    const daily = new Map(history.map(row => [row.date, { date: row.date, currency,
       eurPerUnit: (invert ? 1 / row.close : row.close) * (currency === 'GBX' ? 0.01 : 1),
-      openEurPerUnit: (invert ? 1 / row.open : row.open) * (currency === 'GBX' ? 0.01 : 1), source: this.source }));
+      openEurPerUnit: (invert ? 1 / row.open : row.open) * (currency === 'GBX' ? 0.01 : 1), source: this.source }]));
+    return [...daily.values()].sort((a, b) => a.date.localeCompare(b.date));
   }
 }

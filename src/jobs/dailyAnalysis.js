@@ -82,7 +82,7 @@ export async function runDailyAnalysis(options = {}) {
       if (run.status === 'completed') {
         log('[PORTFOLIO] Analyse déjà terminée aujourd’hui ; aucune transaction rejouée.');
         log('[PORTFOLIO] done');
-        return { status: 'already_completed', date: asOfDate, dryRun: false };
+        return { status: 'already_completed', date: asOfDate, dryRun: false, runId: run.id };
       }
       await repository.configurePortfolio(portfolioRow.id, settings);
     }
@@ -292,7 +292,9 @@ export async function runDailyAnalysis(options = {}) {
           dividendsCredited: false, configuredStrategy: settings.strategy } }, benchmark.id);
     }
     log('[PERFORMANCE] done');
-    return { status: 'completed', dryRun, date: asOfDate, importedRows: imported, portfolio, performance, recommendations, executedTransactions: executed };
+    return { status: 'completed', dryRun, date: asOfDate, runId: run?.id ?? null, importedRows: imported,
+      benchmark: { name: benchmark.name, priceDate: benchmarkLast.date, cumulativeReturn: performance.benchmarkCumulativeReturn },
+      portfolio, performance, recommendations, executedTransactions: executed };
   } catch (error) {
     if (run) { try { await repository.fail(run, error.message); } catch { log('[PORTFOLIO] échec de finalisation du run ; reprise après expiration de lease.'); } }
     throw error;

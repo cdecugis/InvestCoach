@@ -62,7 +62,12 @@ export class InvestmentRepository {
       cooldown_days: settings.strategy.cooldown.days }).eq('id', id), 'paramètres portefeuille');
   }
   savePrices(rows) { return this.upsert('marketPrices', rows, 'asset_id,date'); }
-  saveFx(rows) { return this.upsert('fxRates', rows, 'rate_date,currency'); }
+  saveFx(rows) {
+    // Protection SQL même avec un autre fournisseur : un upsert ne peut contenir
+    // deux lignes visant la même clé. Dernière valeur conservée, sans suppression.
+    const unique = new Map(rows.map(row => [JSON.stringify([row.rate_date, row.currency]), row]));
+    return this.upsert('fxRates', [...unique.values()], 'rate_date,currency');
+  }
   saveBenchmarkPrices(rows) { return this.upsert('benchmarkPrices', rows, 'benchmark_id,price_date'); }
   saveMetrics(rows) { return this.upsert('dailyMetrics', rows, 'instrument_id,as_of_date'); }
   saveScores(rows) { return this.upsert('dailyScores', rows, 'instrument_id,as_of_date'); }
@@ -109,5 +114,59 @@ export class InvestmentRepository {
   async fail(run, message) {
     resultOrThrow(await this.table('dailyRuns').update({ status: 'failed', error_message: message.slice(0, 500), lease_until: null })
       .eq('id', run.id).eq('lease_token', run.leaseToken).eq('status', 'running'), 'échec run');
+  }
+  async getCompletedRun(runId) {
+    return resultOrThrow(await this.table('dailyRuns').select('*').eq('id', runId).eq('status', 'completed').single(), 'run finalisé');
+  }
+  async getCompletedReport(runId) {
+    const run = await this.getCompletedRun(runId);
+    const [snapshot, records, trades, assets, portfolio] = await Promise.all([
+      this.table('portfolioDaily').select('*').eq('run_id', runId).single().then(result => resultOrThrow(result, 'snapshot finalisé')),
+      this.all('recommendations', query => query.eq('run_id', runId).order('id')),
+      this.all('transactions', query => query.eq('run_id', runId).order('daily_slot')),
+      this.getAssets(), this.getPortfolio(),
+    ]);
+    const benchmark = await this.getBenchmark(portfolio.benchmark_id);
+    const numeric = value => value == null ? null : Number(value);
+    const symbol = id => assets.find(asset => asset.id === id)?.provider_symbol ?? assets.find(asset => asset.id === id)?.symbol ?? id;
+    return { status: 'already_completed', dryRun: false, runId, date: run.run_date,
+      portfolio: { id: run.portfolio_id, cashEur: numeric(snapshot.cash_eur), totalValueEur: numeric(snapshot.total_value_eur),
+        investedCostEur: numeric(snapshot.invested_cost_eur), positionsValueEur: numeric(snapshot.positions_value_eur), positions: snapshot.positions_detail },
+      performance: { dailyReturn: numeric(snapshot.daily_return), cumulativeReturn: numeric(snapshot.cumulative_return),
+        benchmarkCumulativeReturn: numeric(snapshot.benchmark_cumulative_return), excessReturn: numeric(snapshot.excess_return) },
+      benchmark: { name: benchmark.name, priceDate: snapshot.benchmark_price_date, cumulativeReturn: numeric(snapshot.benchmark_cumulative_return) },
+      recommendations: records.map(record => ({ instrumentId: record.instrument_id, symbol: record.instrument_id ? symbol(record.instrument_id) : undefined,
+        action: record.action, score: numeric(record.score), confidence: numeric(record.confidence), classification: record.classification,
+        riskLevel: record.risk_level, reasons: record.reasons, positiveReasons: record.positive_reasons, mainRisks: record.main_risks,
+        horizon: record.horizon, proposedAmountEur: numeric(record.estimated_amount_eur), proposedQuantity: numeric(record.proposed_quantity),
+        review: record.decision_context?.review, components: record.decision_context?.components, decisionContext: record.decision_context })),
+      executedTransactions: trades.map(trade => ({ ...trade, side: trade.side, symbol: symbol(trade.instrument_id), instrumentId: trade.instrument_id,
+        amountEur: numeric(trade.gross_amount_eur), quantity: numeric(trade.quantity) })),
+    };
+  }
+  async getEmailReport(runId) {
+    return resultOrThrow(await this.table('dailyEmailReports').select('*').eq('run_id', runId).maybeSingle(), 'rapport email');
+  }
+  async enqueueEmail(runId, recipient, message) {
+    await this.getCompletedRun(runId);
+    // Conserver le contenu du premier rapport : UNIQUE(run_id), aucun remplacement.
+    resultOrThrow(await this.table('dailyEmailReports').upsert({ run_id: runId, recipient,
+      subject: message.subject, html_body: message.html, text_body: message.text },
+    { onConflict: 'run_id', ignoreDuplicates: true }), 'outbox email');
+    return this.getEmailReport(runId);
+  }
+  async claimEmail(runId) {
+    await this.getCompletedRun(runId);
+    // Mise à jour conditionnelle atomique : un seul appel gagne, jamais de reclaim.
+    return resultOrThrow(await this.table('dailyEmailReports').update({ status: 'sending', attempt_count: 1 })
+      .eq('run_id', runId).eq('status', 'pending').eq('attempt_count', 0).select('*').maybeSingle(), 'réservation email');
+  }
+  async completeEmail(runId, providerMessageId = null) {
+    resultOrThrow(await this.table('dailyEmailReports').update({ status: 'sent', sent_at: new Date().toISOString(),
+      provider_message_id: providerMessageId, error_message: null }).eq('run_id', runId).eq('status', 'sending'), 'email envoyé');
+  }
+  async failEmail(runId) {
+    resultOrThrow(await this.table('dailyEmailReports').update({ status: 'failed', error_message: 'EMAIL_DELIVERY_FAILED; ne pas retenter automatiquement.' })
+      .eq('run_id', runId).eq('status', 'sending'), 'échec email');
   }
 }

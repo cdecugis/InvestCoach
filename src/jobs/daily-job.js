@@ -1,4 +1,5 @@
 import { runDailyAnalysis } from './dailyAnalysis.js';
+import { produceDailyReport } from '../modules/email/report.js';
 
 /**
  * Point d'entrée conservé pour Express ; pipeline implémenté dans dailyAnalysis.
@@ -8,9 +9,10 @@ import { runDailyAnalysis } from './dailyAnalysis.js';
  * 4. Valoriser le portefeuille et produire les recommandations.
  * 5. Exécuter au plus deux transactions virtuelles via RPC atomique.
  * 6. Revaloriser, enregistrer snapshot/performance et finaliser le run.
- * Le transport email n'est pas encore branché sur ce pipeline.
+ * Le rapport et l'email sont traités après finalisation, sans rejouer le moteur.
  * Reprise par étapes : ne jamais rejouer une transaction déjà enregistrée.
  */
 export async function runDailyJob(options = {}) {
-  return runDailyAnalysis(options);
+  const result = await (options.analysis ?? runDailyAnalysis)(options);
+  return produceDailyReport(result, options);
 }

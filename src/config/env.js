@@ -64,6 +64,8 @@ if (!['true', 'false'].includes(dryRun)) throw new Error('DRY_RUN doit être tru
 const paperFeeEur = Number(process.env.PAPER_FEE_EUR ?? 0);
 if (!Number.isFinite(paperFeeEur) || paperFeeEur < 0
   || Math.abs(paperFeeEur * 100 - Math.round(paperFeeEur * 100)) > 1e-6) throw new Error('PAPER_FEE_EUR invalide (montant au centime).');
+const emailEnabled = process.env.EMAIL_ENABLED ?? 'false';
+if (!['true', 'false'].includes(emailEnabled)) throw new Error('EMAIL_ENABLED doit être true ou false.');
 
 export const config = Object.freeze({
   port,
@@ -80,6 +82,8 @@ export const config = Object.freeze({
   marketDelayMs: integerEnv('MARKET_DELAY_MS', 250, 0, 10000),
   maxPriceAgeDays: integerEnv('MAX_PRICE_AGE_DAYS', 4, 0, 4),
   paperFeeEur,
+  email: Object.freeze({ enabled: emailEnabled === 'true', to: process.env.EMAIL_TO ?? '',
+    from: process.env.EMAIL_FROM ?? '', provider: process.env.EMAIL_PROVIDER ?? '' }),
   riskProfile,
   strategy,
   initialCapitalEur: 1000,
