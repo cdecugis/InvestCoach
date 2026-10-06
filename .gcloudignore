@@ -1,0 +1,13 @@
+# Archive Cloud Build limitée aux fichiers de l'application, sans .env ni cache.
+*
+!.gcloudignore
+!.dockerignore
+!Dockerfile
+!package.json
+!package-lock.json
+!src/
+!src/**
+!config/
+!config/**
+!scripts/
+!scripts/**
