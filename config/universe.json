@@ -1,0 +1,252 @@
+{
+  "baseCurrency": "EUR",
+  "instruments": [
+    {
+      "symbol": "AAPL",
+      "providerSymbol": "AAPL",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "MSFT",
+      "providerSymbol": "MSFT",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "NVDA",
+      "providerSymbol": "NVDA",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "AMZN",
+      "providerSymbol": "AMZN",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "META",
+      "providerSymbol": "META",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "GOOGL",
+      "providerSymbol": "GOOGL",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "AVGO",
+      "providerSymbol": "AVGO",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "AMD",
+      "providerSymbol": "AMD",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "TSLA",
+      "providerSymbol": "TSLA",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "PLTR",
+      "providerSymbol": "PLTR",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "NFLX",
+      "providerSymbol": "NFLX",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "CRM",
+      "providerSymbol": "CRM",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "ORCL",
+      "providerSymbol": "ORCL",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "COST",
+      "providerSymbol": "COST",
+      "exchange": "XNAS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "LLY",
+      "providerSymbol": "LLY",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "JNJ",
+      "providerSymbol": "JNJ",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "JPM",
+      "providerSymbol": "JPM",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "BAC",
+      "providerSymbol": "BAC",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "V",
+      "providerSymbol": "V",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "MA",
+      "providerSymbol": "MA",
+      "exchange": "XNYS",
+      "currency": "USD",
+      "region": "US",
+      "enabled": true
+    },
+    {
+      "symbol": "ASML",
+      "providerSymbol": "ASML.AS",
+      "exchange": "XAMS",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "SAP",
+      "providerSymbol": "SAP.DE",
+      "exchange": "XETR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "AIR",
+      "providerSymbol": "AIR.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "SU",
+      "providerSymbol": "SU.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "MC",
+      "providerSymbol": "MC.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "OR",
+      "providerSymbol": "OR.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "RMS",
+      "providerSymbol": "RMS.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "SAF",
+      "providerSymbol": "SAF.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "SAN",
+      "providerSymbol": "SAN.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    },
+    {
+      "symbol": "BNP",
+      "providerSymbol": "BNP.PA",
+      "exchange": "XPAR",
+      "currency": "EUR",
+      "region": "EU",
+      "enabled": true
+    }
+  ],
+  "benchmark": {
+    "name": "MSCI World (proxy IWDA)",
+    "kind": "etf_proxy",
+    "returnType": "net_total_return",
+    "currency": "EUR",
+    "providerSymbol": "IWDA.AS"
+  }
+}

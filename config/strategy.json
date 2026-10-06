@@ -1,0 +1,21 @@
+{
+  "AGGRESSIVE": {
+    "modelVersion": "aggressive-v2",
+    "limits": { "maxPositions": 4, "maxPositionWeight": 0.35, "maxInvestedCapitalEur": 1000, "minOrderEur": 100, "maxTradesPerDay": 2 },
+    "weights": { "momentum1m": 20, "momentum3m": 20, "acceleration": 10, "unusualVolume": 10, "breakout": 10, "relativeMarket": 10, "relativeSector": 5, "growthResults": 5, "catalysts": 10 },
+    "normalization": {
+      "momentum1m": [-0.10, 0.20], "momentum3m": [-0.20, 0.40],
+      "acceleration": [-0.05, 0.10], "unusualVolume": [0.8, 2.5],
+      "breakout": [-0.15, 0.02], "relativeMarket": [-0.10, 0.15],
+      "relativeSector": [-0.10, 0.15], "growthResults": [-0.10, 0.20], "catalysts": [-1, 1]
+    },
+    "signals": { "buyScore": 75, "sellScore": 40, "minConfidence": 0.8, "minMomentumScore": 60, "minConfirmationScore": 65 },
+    "cooldown": { "days": 7, "significantScoreChange": 15, "significantCatalystStrength": 0.7 },
+    "review": { "stopReviewPct": -18, "takeProfitReviewPct": 25 },
+    "risk": { "speculativeVolatility": 0.55, "minAverageTurnoverEur": 1000000, "horizon": "1 à 3 mois, réanalyse quotidienne" },
+    "evidence": {
+      "maxAgeDays": 30,
+      "catalystTypes": ["earnings_beat", "guidance_raise", "product_launch", "favorable_regulation", "analyst_upgrade", "turnaround", "earnings_miss", "guidance_cut", "adverse_regulation", "analyst_downgrade"]
+    }
+  }
+}
