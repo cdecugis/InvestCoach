@@ -229,6 +229,22 @@ Pour **587**, `secure=false` et STARTTLS est exigé par `requireTLS=true` ; la v
 
 EMAIL_TO accepte des adresses simples séparées par **virgule ou point-virgule**. Les valeurs sont trimées, les entrées vides supprimées et les doublons éliminés sans distinction de casse. Exemple : `EMAIL_TO="premier@example.com; second@example.com, premier@example.com"` enverra à deux destinataires. EMAIL_FROM accepte `Coach Invest <christophe.decugis@gmail.com>`. Un refus SMTP partiel est traité comme un échec sans nouvel envoi automatique, car certains destinataires peuvent déjà avoir reçu le message.
 
+### Backfill historique de 30 jours
+
+```powershell
+npm run backfill:30d
+```
+
+La commande charge `config/universe.json` (ou `UNIVERSE_CONFIG_PATH`) et les actifs activés, avec leurs `providerSymbol` Yahoo. Elle couvre les **30 jours calendaires terminés, de J−30 à J−1**, dans `APP_TIMEZONE` ; aucune bougie n'est inventée pour les week-ends, jours fériés ou dates manquantes. Pour écrire dans Supabase, renseigner `SUPABASE_URL`, `SUPABASE_SECRET_KEY` et **`DRY_RUN=false`** dans le `.env`. Avec `DRY_RUN=true`, les téléchargements et calculs ont lieu mais aucune donnée n'est écrite.
+
+Un historique antérieur de `HISTORY_LOOKBACK_DAYS` (550 jours par défaut) est téléchargé en mémoire pour MA200, les rendements longs et les comparaisons marché. Seule la fenêtre de 30 jours est persistée dans `invest_market_prices`, `invest_daily_metrics`, `invest_benchmark_prices` et `invest_fx_rates`. Les références manquantes sont ajoutées à `invest_assets` et le benchmark est synchronisé dans `invest_benchmarks`, sans modifier l'affectation du portefeuille. Le benchmark par défaut est IWDA.AS, et les conventions FX restent celles de l'adaptateur quotidien (EUR par unité, inversion USD, GBX/GBP).
+
+Chaque métrique à la date D utilise uniquement les observations datées au plus tard D, y compris FX et benchmark ; un taux absent ou trop ancien reste indisponible. Les indicateurs sans historique suffisant sont `null`. Les prix ajustés sont rebasés à la clôture D pour éliminer le facteur multiplicatif d'ajustements de splits/dividendes postérieurs : `calculation_version=historical-indicators-v1-asof-rebased`. Yahoo fournit un historique corrigé actuel, pas une archive des valeurs publiées à l'époque ; ce backfill ne constitue donc pas un backtest avec des données archivées à chaque date.
+
+Les UPSERTs utilisent les clés existantes, dont `(asset_id,date)` pour les cours et `(instrument_id,as_of_date)` pour les métriques : une relance actualise les données corrigées sans doublons. Les logs par symbole indiquent les lignes de la fenêtre récupérées/upsertées, les dates extrêmes et les erreurs. Une erreur laisse les autres symboles continuer ; la commande quitte avec un code non nul si le backfill est partiel, sans annuler les données réussies.
+
+Aucun score, recommandation, transaction, portefeuille, performance quotidienne, run ou email n'est rétro-populé ou exécuté. L'outbox n'est pas touchée. Aucune nouvelle migration n'est nécessaire après les migrations existantes 001–003.
+
 ### Test du rapport complet depuis la base
 
 Avec les variables Supabase et SMTP du `.env` existant, et `EMAIL_ENABLED=true`, lancer :

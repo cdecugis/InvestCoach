@@ -12,6 +12,7 @@
     "daily": "node scripts/daily.js",
     "email:test": "node scripts/email-test.js",
     "email:test-report": "node scripts/email-test-report.js",
+    "backfill:30d": "node scripts/backfill-30d.js",
     "dev": "node --watch src/server.js",
     "check": "node scripts/check-syntax.js",
     "test": "node --test --test-isolation=none tests/*.test.js"
